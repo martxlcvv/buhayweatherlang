@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weather App </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #1c1f2b, #2c3e50);
+      color: #eee;
+      text-align: center;
+      padding: 30px;
+      transition: background 0.6s ease;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2.2em;
+      margin-bottom: 20px;
+      color: #90caf9;
+    }
+
+    input, button {
+      padding: 12px 15px;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 90%;
+      max-width: 350px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      margin-bottom: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    input {
+      background: #2e3b4e;
+      color: #fff;
+    }
+
+    input::placeholder {
+      color: #ccc;
+    }
+
+    button {
+      background-color: #2196f3;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1976d2;
+    }
+
+    #weatherInfo {
+      margin-top: 30px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      z-index: 10;
+      position: relative;
+    }
+
+    .icon {
+      width: 100px;
+    }
+
+    .sad {
+      font-style: italic;
+      margin-top: 10px;
+    }
+
+    .hugot {
+      font-size: 2em;
+      font-weight: bold;
+      color: black;
+      margin-top: 15px;
+    }
+
+    #errorMsg {
+      color: #ff6f61;
+      margin-top: 15px;
+    }
+
+    .emoji {
+      position: fixed;
+      top: -40px;
+      font-size: 30px;
+      pointer-events: none;
+      opacity: 0.8;
+      animation-name: fall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(0);
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(110vh);
+        opacity: 0;
+      }
+    }
+
+    /* crying Toby GIF styling */
+    #cryingGif {
+      width: 120px;
+      margin: 10px auto 0 auto;
+      display: block;
+      animation: pulse 2s infinite;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.7);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5em; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌧️ Weather App Gawa Ni Mart</h1>
+  <input type="text" id="city" placeholder="Enter city (e.g. Caloocan)" />
+  <br />
+  <button onclick="getWeather()">Check Weather</button>
+
+  <div id="errorMsg"></div>
+  <div id="weatherInfo"></div>
+
+  <!-- Sad Sound -->
+  <audio id="sadAudio" src="song.mp3" preload="auto"></audio>
+
+  <script>
+    const apiKey = "f8202f33338f97e231ef867c0bf7072c";
+
+    function describeWeather(condition) {
+      if (condition.includes("Rain")) return "Rainy 🌧️";
+      if (condition.includes("Clear")) return "Sunny ☀️";
+      if (condition.includes("Cloud")) return "Cloudy ☁️";
+      return condition;
+    }
+
+    // Remove all emojis before adding new ones
+    function clearEmojis() {
+      document.querySelectorAll('.emoji').forEach(e => e.remove());
+    }
+
+    // Create emojis that fall infinitely with random delay & speed
+    function createFallingEmojis(count = 30) {
+      clearEmojis();
+      for (let i = 0; i < count; i++) {
+        const emoji = document.createElement('div');
+        emoji.classList.add('emoji');
+        emoji.textContent = '😢';
+        emoji.style.left = Math.random() * window.innerWidth + 'px';
+        emoji.style.fontSize = (20 + Math.random() * 20) + 'px';
+
+        // Random duration between 4s to 8s
+        emoji.style.animationDuration = (4 + Math.random() * 4) + 's';
+
+        // Random delay to stagger falling emojis, between 0 and animationDuration
+        emoji.style.animationDelay = (Math.random() * parseFloat(emoji.style.animationDuration)) + 's';
+
+        document.body.appendChild(emoji);
+      }
+    }
+
+    async function getWeather() {
+      const cityInput = document.getElementById('city');
+      const city = cityInput.value.trim();
+      const weatherDiv = document.getElementById('weatherInfo');
+      const errorDiv = document.getElementById('errorMsg');
+      const audio = document.getElementById('sadAudio');
+
+      weatherDiv.innerHTML = "";
+      errorDiv.textContent = "";
+
+      if (!city) {
+        errorDiv.textContent = "Please enter a city name.";
+        return;
+      }
+
+      let url = "";
+      const isCaloocan = city.toLowerCase().includes("caloocan");
+
+      if (isCaloocan) {
+        url = `https://api.openweathermap.org/data/2.5/weather?lat=14.65&lon=120.9816&appid=${apiKey}&units=metric`;
+      } else {
+        url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+      }
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("City not found");
+        const data = await res.json();
+
+        const icon = data.weather[0].icon;
+        const rawCondition = data.weather[0].main;
+        const condition = describeWeather(rawCondition);
+        const temp = data.main.temp;
+        const locationName = isCaloocan ? "Caloocan City" : data.name;
+
+        // Background color switcher
+        if (condition.includes("Rainy")) {
+          document.body.style.background = "linear-gradient(to bottom, #2c3e50, #4b79a1)";
+        } else if (condition.includes("Sunny")) {
+          document.body.style.background = "linear-gradient(to bottom, #434343, #000000)";
+        } else {
+          document.body.style.background = "linear-gradient(to bottom, #3e4a59, #1f2d3d)";
+        }
+
+        if (isCaloocan) {
+          audio.currentTime = 0;
+          audio.play().catch(e => console.warn("Autoplay blocked"));
+          createFallingEmojis(30);
+
+          weatherDiv.innerHTML = `
+            <img class="icon" src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="Weather icon" />
+            <h3>${locationName}</h3>
+            <div class="hugot">I MISS YOU SO MUCH 😔</div>
+            <p class="sad">${condition}</p>
+            <p>${temp}°C</p>
+            <img id="cryingGif" src="https://media.tenor.com/sq9YDOeaVV0AAAAM/toby-cry-phone-spider-man-cry-phone.gif" alt="Crying Toby Spider-Man" />
+          `;
+        } else {
+          clearEmojis();
+          weatherDiv.innerHTML = `
+            <img class="icon" src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="Weather icon" />
+            <h3>${locationName}</h3>
+            <p>${condition}</p>
+            <p>${temp}°C</p>
+          `;
+        }
+
+      } catch (err) {
+        console.error("Weather fetch failed:", err);
+        errorDiv.textContent = "City not found 😞";
+      }
+    }
+  </script>
+</body>
+</html>
