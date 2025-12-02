@@ -262,21 +262,21 @@
           document.body.style.background = "linear-gradient(to bottom, #3e4a59, #1f2d3d)";
         }
 
-        if (isCaloocan) {
-          audio.currentTime = 0;
-          audio.play().catch(e => console.warn("Autoplay blocked"));
-          createFallingEmojis(30);
+        // Play sad audio and create falling emojis for ALL locations
+        audio.currentTime = 0;
+        audio.play().catch(e => console.warn("Autoplay blocked"));
+        createFallingEmojis(30);
 
+        if (isCaloocan) {
           weatherDiv.innerHTML = `
             <img class="icon" src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="Weather icon" />
             <h3>${locationName}</h3>
-            <div class="hugot">I MISS YOU SO MUCH 😔</div>
+            <div class="hugot">${hugotLine}</div>
             <p class="sad">${condition}</p>
             <p>${temp}°C</p>
             <img id="cryingGif" src="https://media.tenor.com/sq9YDOeaVV0AAAAM/toby-cry-phone-spider-man-cry-phone.gif" alt="Crying Toby Spider-Man" />
           `;
         } else {
-          clearEmojis();
           weatherDiv.innerHTML = `
             <img class="icon" src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="Weather icon" />
             <h3>${locationName}</h3>
