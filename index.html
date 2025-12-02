@@ -79,10 +79,13 @@
     }
 
     .hugot {
-      font-size: 2em;
+      font-size: 1.3em;
       font-weight: bold;
-      color: black;
+      color: #ff6b9d;
       margin-top: 15px;
+      text-shadow: 0 0 10px rgba(255,107,157,0.5);
+      line-height: 1.4;
+      padding: 10px;
     }
 
     #errorMsg {
@@ -151,6 +154,37 @@
   <script>
     const apiKey = "f8202f33338f97e231ef867c0bf7072c";
 
+    // Hugot lines based on weather
+    function getHugotLine(condition) {
+      const lines = {
+        rain: [
+          "Para kang ulan, dumating ka lang nang biglaan, tapos iiwan mo rin ako sa lamig 💔",
+          "Tulad ng ulan, bumabalik ka lang kapag makulimlim na ang lahat 😢",
+          "Umuulan pero mas masakit pa rin yung pag-alis mo 🌧️💔"
+        ],
+        clear: [
+          "Malinaw ang langit, pero malabo na ang future natin 😔☀️",
+          "Araw na nga, pero bakit parang gabi pa rin sa puso ko? 💔",
+          "Sunny weather pero cloudy yung feelings ko para sayo ngayon ☀️😢"
+        ],
+        clouds: [
+          "Puro ulap na lang, tulad ng relationship natin - malabo na 😶‍🌫️💔",
+          "Cloudy, parang yung future ko without you - walang liwanag 🌥️😢",
+          "May bagong ulap na dumaan, may bago ka na rin siguro 😔☁️"
+        ],
+        default: [
+          "Kahit anong weather, masakit pa rin na wala ka na 💔",
+          "Climate change is real, pati feelings mo nag-change na rin 😢",
+          "Unpredictable ang weather, unpredictable din yung pag-ibig mo 😔"
+        ]
+      };
+      
+      if (condition.includes("Rain")) return lines.rain[Math.floor(Math.random() * lines.rain.length)];
+      if (condition.includes("Clear") || condition.includes("Sunny")) return lines.clear[Math.floor(Math.random() * lines.clear.length)];
+      if (condition.includes("Cloud")) return lines.clouds[Math.floor(Math.random() * lines.clouds.length)];
+      return lines.default[Math.floor(Math.random() * lines.default.length)];
+    }
+
     function describeWeather(condition) {
       if (condition.includes("Rain")) return "Rainy 🌧️";
       if (condition.includes("Clear")) return "Sunny ☀️";
@@ -217,6 +251,7 @@
         const condition = describeWeather(rawCondition);
         const temp = data.main.temp;
         const locationName = isCaloocan ? "Caloocan City" : data.name;
+        const hugotLine = getHugotLine(condition);
 
         // Background color switcher
         if (condition.includes("Rainy")) {
@@ -245,7 +280,8 @@
           weatherDiv.innerHTML = `
             <img class="icon" src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="Weather icon" />
             <h3>${locationName}</h3>
-            <p>${condition}</p>
+            <div class="hugot">${hugotLine}</div>
+            <p class="sad">${condition}</p>
             <p>${temp}°C</p>
           `;
         }
